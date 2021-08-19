@@ -2,6 +2,7 @@ package com.example.stackmybizexercise
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.util.Patterns
@@ -11,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.fragment.findNavController
 import com.example.stackmybizexercise.databinding.FragmentRegisterBinding
 import com.example.stackmybizexercise.roomdatabase.UserDatabase
 import com.example.stackmybizexercise.roomdatabase.UserEntity
@@ -29,7 +31,6 @@ class LoginFragment : Fragment() {
     ): View? {
 
         fragmentLoginRegisterBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_register, container, false)
-        initView()
         return fragmentLoginRegisterBinding.root
     }
 
@@ -41,19 +42,22 @@ class LoginFragment : Fragment() {
 
             if (userName.isEmpty())
                 fragmentLoginRegisterBinding.tvName.error = "Enter User Name"
-            else if (password.isEmpty())
+            else if (password.isEmpty()) {
+                fragmentLoginRegisterBinding.textInputLayout2.isEndIconVisible = false
                 fragmentLoginRegisterBinding.tvPassword.error = "Enter Password"
+            } else fragmentLoginRegisterBinding.textInputLayout2.isEndIconVisible = true
 
             if (userName.isNotEmpty() && Patterns.EMAIL_ADDRESS.matcher(userName).matches()) {
                 val entity = UserEntity(userName, password)
                 coroutineScope.launch {
                      val userInfo =  UserDatabase.getInstance(requireContext()).getUserDetailDao().getUser(userName, password)
-                    Log.e("TAG", "onViewCreated: "+userInfo )
+                    Log.e("TAG", "onViewCreated: $userInfo")
 
                     if (userInfo != null) {
-                        Runnable {
+                        var handle = Handler(Looper.getMainLooper()).post {
                             Toast.makeText(context, "success", Toast.LENGTH_SHORT).show()
                         }
+
                         val intent = Intent(context, UserProfileActivity::class.java).apply {
                             putExtra("userName", userInfo.userName)
                             putExtra("userPassword", userInfo.password)
@@ -66,23 +70,10 @@ class LoginFragment : Fragment() {
             }
         }
 
-    }
-    private fun initView() {
-        val userName = "abc12345@gmail.com"
-        val password = "123"
-        val entity = UserEntity(userName, password)
-        coroutineScope.launch {
-            var count =
-                context?.let { UserDatabase.getInstance(it).getUserDetailDao().insert(entity) }
-            Log.e("TAG", "initView: "+count )
-            if (count != null) {
-                if (count > 0L) {
-                    Runnable {
-                        Toast.makeText(context, " inserted", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
+        fragmentLoginRegisterBinding.tvLogReg.setOnClickListener {
+            findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
         }
+
     }
 
 
