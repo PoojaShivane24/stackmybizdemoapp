@@ -91,13 +91,6 @@ class RegisterFragment : Fragment() {
                         coroutineScope.launch {
                             count = UserDatabase.getInstance(requireContext()).getUserDetailDao()
                                 .insert(entity)
-                            Log.e("TAG", "onViewCreated: " + count)
-//                            if (count > 0L) {
-//                                var handle = Handler(Looper.getMainLooper()).post {
-//                                    Toast.makeText(context, "success", Toast.LENGTH_SHORT).show()
-//                                    findNavController().navigate(R.id.action_registerFragment_to_loginFragment)
-//                                }
-//                            }
                         }
                     } else {
                         Toast.makeText(context, "Password does not match", Toast.LENGTH_SHORT).show()

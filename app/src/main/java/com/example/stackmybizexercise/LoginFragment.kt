@@ -18,6 +18,7 @@ import com.example.stackmybizexercise.databinding.FragmentRegisterBinding
 import com.example.stackmybizexercise.roomdatabase.UserDatabase
 import com.example.stackmybizexercise.roomdatabase.UserEntity
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
@@ -26,8 +27,8 @@ class LoginFragment : Fragment() {
 
     lateinit var fragmentLoginRegisterBinding : FragmentRegisterBinding
     val coroutineScope = CoroutineScope(SupervisorJob())
-
     lateinit var firebaseAuth : FirebaseAuth
+    private val db = FirebaseDatabase.getInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -100,6 +101,12 @@ class LoginFragment : Fragment() {
     private fun firebaseLogin(userName: String, password: String) {
         firebaseAuth.signInWithEmailAndPassword(userName, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
+                val ref = db.reference.child("Events")
+                val hashMap = HashMap<String,String>()
+                hashMap["status"] = "Logged In"
+                hashMap["time"] = System.currentTimeMillis().toString()
+                hashMap["user"] = userName
+                ref.push().setValue(hashMap)
                 Toast.makeText(context, "Login successfully", Toast.LENGTH_SHORT).show()
                 val intent = Intent(requireActivity(), UserProfileActivity::class.java).apply {
                     putExtra("userName", userName)
