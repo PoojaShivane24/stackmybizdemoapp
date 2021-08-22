@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "239073354805",
+    "project_id": "stackmybiz-3f383",
+    "storage_bucket": "stackmybiz-3f383.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:239073354805:android:1946c46724747691e0fd7c",
+        "android_client_info": {
+          "package_name": "com.example.stackmybizexercise"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "239073354805-j56u5r58qd03fvbevhd0kd2t40a7ki6m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLrLY6QV0YeqgG04Im2kW8jGpzaCPX95I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "239073354805-j56u5r58qd03fvbevhd0kd2t40a7ki6m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

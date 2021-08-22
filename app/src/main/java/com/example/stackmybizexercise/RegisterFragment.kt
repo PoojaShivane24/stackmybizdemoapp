@@ -16,6 +16,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.stackmybizexercise.databinding.FragmentRegisterBinding
 import com.example.stackmybizexercise.roomdatabase.UserDatabase
 import com.example.stackmybizexercise.roomdatabase.UserEntity
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
@@ -26,6 +27,9 @@ class RegisterFragment : Fragment() {
     lateinit var fragmentLoginRegisterBinding : FragmentRegisterBinding
 
     val coroutineScope = CoroutineScope(SupervisorJob())
+
+
+    lateinit var firebaseAuth : FirebaseAuth
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -45,43 +49,15 @@ class RegisterFragment : Fragment() {
         fragmentLoginRegisterBinding.textInputLayout3.visibility = View.VISIBLE
         fragmentLoginRegisterBinding.btnLogReg.text = resources.getString(R.string.register)
         fragmentLoginRegisterBinding.tvLogReg.text = resources.getString(R.string.login)
+
+        firebaseAuth = FirebaseAuth.getInstance()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         fragmentLoginRegisterBinding.btnLogReg.setOnClickListener {
-//            if (checkInput(fragmentLoginRegisterBinding.tvName.text.toString(), fragmentLoginRegisterBinding.tvPassword.text.toString() )
-            val userName = fragmentLoginRegisterBinding.tvName.text.toString()
-            val password = fragmentLoginRegisterBinding.tvPassword.text.toString()
-            val confirmPassword = fragmentLoginRegisterBinding.tvConfirmPassword.text.toString()
-
-            when {
-                userName.isEmpty() -> fragmentLoginRegisterBinding.tvName.error = "Enter User Name"
-                password.isEmpty() -> fragmentLoginRegisterBinding.tvPassword.error = "Enter Password"
-                confirmPassword.isEmpty() -> fragmentLoginRegisterBinding.tvConfirmPassword.error = "Enter Confirm Password"
-            }
-            if (userName.isNotEmpty() && Patterns.EMAIL_ADDRESS.matcher(userName).matches()) {
-                if (password == confirmPassword) {
-                    val entity = UserEntity(userName, password)
-                    coroutineScope.launch {
-                        count = UserDatabase.getInstance(requireContext()).getUserDetailDao()
-                            .insert(entity)
-                        Log.e("TAG", "onViewCreated: " + count)
-                        if (count > 0L) {
-                            var handle = Handler(Looper.getMainLooper()).post {
-                                Toast.makeText(context, "success", Toast.LENGTH_SHORT).show()
-                                findNavController().navigate(R.id.action_registerFragment_to_loginFragment)
-                            }
-                        }
-                    }
-                } else {
-                    Toast.makeText(context, "Password does not match", Toast.LENGTH_SHORT).show()
-                }
-            }else {
-                Toast.makeText(context, "Enter valid Email Id", Toast.LENGTH_SHORT).show()
-            }
-
+            registerUser()
         }
         fragmentLoginRegisterBinding.tvLogReg.setOnClickListener {
             findNavController().navigate(R.id.action_registerFragment_to_loginFragment)
@@ -89,8 +65,60 @@ class RegisterFragment : Fragment() {
 
     }
 
-    private fun checkInput(username: String, password: String): Boolean {
-        return username.isNotEmpty() && password.isNotEmpty()
+    private fun registerUser() {
+        val userName = fragmentLoginRegisterBinding.tvName.text.toString()
+        val password = fragmentLoginRegisterBinding.tvPassword.text.toString()
+        val confirmPassword = fragmentLoginRegisterBinding.tvConfirmPassword.text.toString()
+
+        when {
+            userName.isEmpty() -> {
+                fragmentLoginRegisterBinding.tvName.error = "Enter User Name"
+                fragmentLoginRegisterBinding.tvName.requestFocus()
+            }
+            password.isEmpty() -> {
+                fragmentLoginRegisterBinding.tvPassword.error = "Enter Password"
+                fragmentLoginRegisterBinding.tvPassword.requestFocus()
+            }
+            confirmPassword.isEmpty() -> {
+                fragmentLoginRegisterBinding.tvConfirmPassword.error = "Enter Confirm Password"
+                fragmentLoginRegisterBinding.tvConfirmPassword.requestFocus()
+            }
+            else -> {
+                if (userName.isNotEmpty() && Patterns.EMAIL_ADDRESS.matcher(userName).matches()) {
+                    if (password == confirmPassword) {
+                        firebaseRegistration(userName, password)
+                        val entity = UserEntity(userName, password)
+                        coroutineScope.launch {
+                            count = UserDatabase.getInstance(requireContext()).getUserDetailDao()
+                                .insert(entity)
+                            Log.e("TAG", "onViewCreated: " + count)
+//                            if (count > 0L) {
+//                                var handle = Handler(Looper.getMainLooper()).post {
+//                                    Toast.makeText(context, "success", Toast.LENGTH_SHORT).show()
+//                                    findNavController().navigate(R.id.action_registerFragment_to_loginFragment)
+//                                }
+//                            }
+                        }
+                    } else {
+                        Toast.makeText(context, "Password does not match", Toast.LENGTH_SHORT).show()
+                    }
+                }else {
+                    Toast.makeText(context, "Enter valid Email Id", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+    }
+
+    private fun firebaseRegistration(userName: String, password: String) {
+        firebaseAuth.createUserWithEmailAndPassword(userName, password).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Toast.makeText(context, "register successfully", Toast.LENGTH_SHORT).show()
+                findNavController().navigate(R.id.action_registerFragment_to_loginFragment)
+            } else {
+                Toast.makeText(context, "register error", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
 
