@@ -47,7 +47,6 @@ class UserProfileActivity : AppCompatActivity() {
         firebaseAuth = FirebaseAuth.getInstance()
 
 
-
         val lm = getSystemService(LOCATION_SERVICE) as LocationManager
         if (!lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
         }
@@ -58,11 +57,9 @@ class UserProfileActivity : AppCompatActivity() {
         )
 
         if (permission == PackageManager.PERMISSION_GRANTED) {
-            mRunnable.run()
         } else {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 PERMISSIONS_REQUEST)
-
         }
     }
 
@@ -111,11 +108,16 @@ class UserProfileActivity : AppCompatActivity() {
         } else {
             val i = LocationServices.getFusedLocationProviderClient(this).lastLocation
             i.addOnSuccessListener {
-                val ref = db.reference.child("Location")
-                val hashMap = HashMap<String, String>()
-                hashMap["latitude"] = it.latitude.toString()
-                hashMap["longitude"] = it.longitude.toString()
-                ref.push().setValue(hashMap)
+                if (it != null) {
+                    val ref = db.reference.child("Location")
+                    val hashMap = HashMap<String, String>()
+                    hashMap["latitude"] = it.latitude.toString()
+                    hashMap["longitude"] = it.longitude.toString()
+                    ref.push().setValue(hashMap)
+                }
+                else {
+                    Toast.makeText(this, "Unable to get Last Location", Toast.LENGTH_SHORT).show()
+                }
 
             }
         }
@@ -130,6 +132,14 @@ class UserProfileActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        mRunnable.run()
+    }
+    override fun onPause() {
+        super.onPause()
+        mHandler.removeCallbacks(mRunnable)
+    }
     override fun onBackPressed() {
         mHandler.removeCallbacks(mRunnable)
         super.onBackPressed()
